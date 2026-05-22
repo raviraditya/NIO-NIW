@@ -369,9 +369,11 @@ for it = 1:nt
             if ~isequal(size(u_surf),size(mask)), u_surf=u_surf'; v_surf=v_surf'; end
             dy = 111e3 * mean(diff(lat_g(iy)));
             dx = 111e3 * cosd(lat_tc(it)) * mean(diff(lon_g(ix)));
-            [du_dy,~] = gradient(u_surf,dy,dx);
-            [~,dv_dx] = gradient(v_surf,dy,dx);
-            zeta = mean(dv_dx-du_dy,'all','omitnan');
+            % MATLAB: [FX,FY] = gradient(F,hx,hy); FX = dF/dx (cols, scaled by hx),
+            % FY = dF/dy (rows, scaled by hy). With u_surf(rows=lat, cols=lon):
+            [~,    du_dy] = gradient(u_surf, dx, dy);   % du/dy
+            [dv_dx, ~   ] = gradient(v_surf, dx, dy);   % dv/dx
+            zeta = mean(dv_dx - du_dy, 'all', 'omitnan');
             f_eff(it) = f_val+0.5*zeta;
             WindStress_Nm2(it) = hypot(tau_ts(jt,1),tau_ts(jt,2));
 
