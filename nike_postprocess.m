@@ -120,9 +120,6 @@ for iSTORM = 1:numel(STORM_LIST)
     cumdist = cumsum(seg_km);
     nk = S.NIKE_coherent_Jm2;
     good = isfinite(nk) & isfinite(cumdist);
-    % findpeaks requires a strictly increasing abscissa, which cumulative
-    % along-track distance is not when a TC recurves, stalls or loops, so the
-    % maxima are located by direct neighbour comparison on the retained points.
     if sum(good) > 8
         xg = cumdist(good);  yg = nk(good);
         [xg, iu] = unique(xg, 'stable');  yg = yg(iu);   % drop repeated positions
@@ -146,9 +143,6 @@ for iSTORM = 1:numel(STORM_LIST)
     %% TRACK-LEVEL STATISTICS
     st = struct();
     grab = @(x) x(isfinite(x));
-    % Final finite value of a cumulative series. Cumulative wind work must be
-    % read at the end of the record, not at its maximum: a curve that ends below
-    % its own peak (net negative transfer) is otherwise reported as the peak.
     lastfin = @(x) x(find(isfinite(x),1,'last'));
     st.peak_NIKE_coh_kJ   = max(S.NIKE_coherent_Jm2)/1000;
     st.peak_NIKE_brd_kJ   = max(S.NIKE_broadband_Jm2)/1000;
@@ -167,10 +161,6 @@ for iSTORM = 1:numel(STORM_LIST)
     st.MLD_at_NIKEpeak    = S.MLD_m(i_pk);
     st.MLD_deepening_m    = st.MLD_max - st.MLD_prestorm;
     st.MLD_deepening_pct  = 100*st.MLD_deepening_m/max(st.MLD_prestorm,eps);
-    % [P5] Near-inertial share of the windowed kinetic energy of Eq. (6),
-    % measured window by window on the mask-averaged surface velocity. This is
-    % a LOWER BOUND: the disk mean cancels near-inertial phase, whereas Eq. (6)
-    % is evaluated pointwise before averaging.
     st.NI_share_median    = NaN;
     if isfield(S,'u_surf_save') && isfield(S,'f_tc')
         i0 = ceil(size(S.u_surf_save,2)/2);
@@ -199,9 +189,6 @@ for iSTORM = 1:numel(STORM_LIST)
     end
     st.mean_ILD           = mean(grab(S.ILD_m));
     st.mean_BLT           = mean(grab(S.BLT_m));
-    % [P2] Barrier-layer fraction on the valid-BLT count, not track length.
-    % BLT_flag_barrier can only be true where BLT is finite, so dividing by nt
-    % mixes a valid-only numerator with a full-record denominator.
     st.n_valid_BLT        = sum(isfinite(S.BLT_m));
     st.barrier_frac       = 100*sum(BLT_flag_barrier)/max(st.n_valid_BLT,1);
     st.below_ML_frac      = 100*mean(grab(Frac_NIKE_below_MLD));
@@ -235,15 +222,6 @@ for iSTORM = 1:numel(STORM_LIST)
     st.strongLC_frac      = 100*sum(isStrongLC)/max(st.n_valid_Lat,1);
     st.mean_Rratio        = mean(grab(S.Asymmetry_Ratio));
     st.median_Rratio      = median(grab(S.Asymmetry_Ratio));
-    % [P3] Asymmetry class fractions on the count of timesteps where AR is
-    % DEFINED, not on track length. AR is NaN wherever the bilateral 10% guard
-    % fails; an undefined timestep is not evidence of symmetry and must not
-    % dilute the right-bias fraction. 'transitional' is a defined class and is
-    % therefore included, so the four fractions sum to 100%.
-    % NOTE: count from the numeric array, NOT from Asymmetry_Class. The class
-    % array is initialised as strings(nt,1), so any timestep skipped by a
-    % 'continue' in the main loop stays as an empty string "" rather than
-    % "undefined", and a  ~= "undefined"  test would wrongly count it.
     st.n_defined_AR       = sum(isfinite(S.Asymmetry_Ratio));
     st.rightbias_frac     = 100*sum(Asymmetry_Class=="right-bias")/max(st.n_defined_AR,1);
     st.symmetric_frac     = 100*sum(Asymmetry_Class=="symmetric")/max(st.n_defined_AR,1);
