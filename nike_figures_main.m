@@ -244,12 +244,6 @@ function A = foe(M,f)
     if isfield(M,f), A=M.(f); else, A=[]; end
 end
 function [zu, Mu] = unifdepth(zp, Mp, ZMAX, method)
-    % [F2] imagesc spaces rows uniformly between y(1) and y(end), so a
-    % non-uniform depth vector is drawn distorted. Resample onto a uniform
-    % grid first. Mp is [ntime x ndepth]; returns Mu as [nzu x ntime],
-    % which is the orientation imagesc expects.
-    % zu starts at zp(1) rather than 0 so that a depth vector which does not
-    % begin at the surface (e.g. VP.z) does not produce NaN rows at the top.
     if nargin < 4, method = 'linear'; end
     zp = zp(:);
     z0 = min(zp);
@@ -635,12 +629,10 @@ function make_fig6(D, n_cyc, OUT_DIR, C, LIT, beautify, savepro, Omega)
             yl=max(d.nike_coh(k),[],'omitnan')*1.15; if ~isfinite(yl)||yl<=0,yl=max(ml+dp)*1.1;end
             if ~isfinite(yl)||yl<=0,yl=1; end
             ylim([0 yl]);
-            % time-mean of the instantaneous ratio (NOT the ratio of time-means;
-            % Fig 5 frac200 uses the other convention -- state both in captions)
-            % [F9] Defer to the post statistic so the panel annotation matches
-            % Table 2. Post applies its own validity guards, so recomputing the
-            % ratio here over every finite pair gives a slightly different
-            % answer (52.1 vs 53.5 for Amphan). Post is authoritative.
+            % Time-mean of the instantaneous ratio, not the ratio of time-means.
+            % Read from the post statistic so the annotation matches Table 2:
+            % post applies its own validity guards, so recomputing here over
+            % every finite pair gives 52.1 instead of 53.5 for Amphan.
             if d.has_post && isfield(d.stat,'below_ML_frac')
                 pct = d.stat.below_ML_frac;
             else
