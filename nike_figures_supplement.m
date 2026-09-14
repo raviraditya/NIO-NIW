@@ -234,8 +234,7 @@ for k = FIGURES_TO_MAKE
     end
 end
 
-% [S5] S10 and S11 are written by Combined_figures_main_v7.m (the two figures
-% moved out of the main text). Report on them so the SI package is complete.
+% [S5] S10 and S11 are written by Combined_figures_main_v7.m
 % FigS9 is built by the separate SLA script; S10 and S11 come from
 % Combined_figures_main_v7.m (the two figures moved out of the main text).
 for ext = {'S9','S10','S11'}
@@ -2305,9 +2304,6 @@ function v = colv(x)
     if isempty(x), v = []; else, v = x(:); end
 end
 %  HYCOM directory time-indexer (v7)
-%  Builds a lookup of every timestep across all .nc files in a folder,
-%  regardless of naming. 'files' is per-row, so fidx is just the row
-%  index (the old placeholder line appended a wrong-length vector).
 function [files, times, fidx, tidx] = index_hycom_dir(hycom_path)
     files = {}; times = datetime.empty(0,1); fidx = []; tidx = [];
     d = dir(fullfile(hycom_path,'*.nc'));
