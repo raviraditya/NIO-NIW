@@ -236,9 +236,6 @@ for iSTORM = 1:numel(STORM_LIST)
 
         for k = 1:nz
             Uk = U(gt,:,k);   Vk = V(gt,:,k);
-            % Drop window timesteps that are all-NaN at this depth (corrupt
-            % HYCOM slices, e.g. Amphan water_v below 6 m on 2020-05-18).
-            % A single bad timestep must not discard the whole depth level.
             good_t = ~all(~isfinite(Uk),2) & ~all(~isfinite(Vk),2);
             Uk = Uk(good_t,:);  Vk = Vk(good_t,:);  Xk = X(good_t,:);
             if size(Uk,1) < 11, continue; end
@@ -290,10 +287,7 @@ for iSTORM = 1:numel(STORM_LIST)
         prof_brdR  = squeeze(mean(Ebrd(mR,:), 1, 'omitnan')).';
         prof_brdL  = squeeze(mean(Ebrd(mL,:), 1, 'omitnan')).';
 
-        % [v7-D] baseline subtraction — SURFACE/ML ONLY, preserve deep structure.
-        % Subtracting the baseline at every depth zeroed the (small but real)
-        % deep NIKE wherever background exceeded it, creating artifact blocks.
-        % Subtract only above the mixed layer, where pre-storm NI energy lives.
+        % [v7-D] baseline subtraction — SURFACE/ML ONLY
         if ~isempty(NIKE_base_z) && numel(NIKE_base_z)==nz
             bl = NIKE_base_z(:);
             bl(z > MLD_m(it)) = 0;              % no subtraction below the ML
